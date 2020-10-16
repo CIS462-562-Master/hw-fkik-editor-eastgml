@@ -220,6 +220,9 @@ public:
 		const std::vector<ASplineVec3::Key>& keys,
 		std::vector<vec3>& ctrlPoints,
 		vec3& startPt, vec3& endPt);
+	
+	virtual vec3 angle_helper(vec3 r1, vec3 r2);
+
 };
 
 
