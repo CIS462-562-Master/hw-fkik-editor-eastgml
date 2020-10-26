@@ -100,11 +100,21 @@ IKController* AActor::getIKController()
 void AActor::updateGuideJoint(vec3 guideTargetPos)
 {
 	if (!m_pSkeleton->getRootNode()) { return; }
-
+	
 	// TODO: 
 	// 1.	Set the global position of the guide joint to the global position of the root joint
 	// 2.	Set the y component of the guide position to 0
 	// 3.	Set the global rotation of the guide joint towards the guideTarget
+	AJoint* root = m_pSkeleton->getRootNode();
+	vec3 root_pos = m_Guide.getLocal2Global() * root->getGlobalTranslation();
+	root_pos[1] = 0.0;
+	m_Guide.setGlobalTranslation(root_pos);
+	vec3 orientation = (guideTargetPos - root_pos).Normalize();
+	vec3 y_axis = vec3(0.0, 1.0, 0.0);
+	mat3 rotation = mat3(y_axis.Cross(orientation), vec3(0.0, 1.0, 0.0), orientation).Transpose();
+
+
+	m_Guide.setGlobalRotation(rotation);
 }
 
 void AActor::solveFootIK(float leftHeight, float rightHeight, bool rotateLeft, bool rotateRight, vec3 leftNormal, vec3 rightNormal)
@@ -118,20 +128,33 @@ void AActor::solveFootIK(float leftHeight, float rightHeight, bool rotateLeft, b
 
 	// 1.	Update the local translation of the root based on the left height and the right height
 
+	AJoint* root = m_pSkeleton->getRootNode();
+	vec3 root_pos = root->getLocalTranslation();
+	float height = leftHeight >= rightHeight ? leftHeight : rightHeight;
+	root_pos[1] += height;
+
+	root->setLocalTranslation(root_pos);
+
 	m_pSkeleton->update();
 
 	// 2.	Update the character with Limb-based IK 
-	
+
+
+
 	// Rotate Foot
 	if (rotateLeft)
 	{
+		ATarget left_foot = ATarget();
+		left_foot.setGlobalTranslation(leftFoot->getGlobalTranslation());
+		m_IKController->IKSolver_Limb(m_IKController->mLfootID, left_foot);
 		// Update the local orientation of the left foot based on the left normal
-		;
 	}
 	if (rotateRight)
 	{
+		ATarget right_foot = ATarget();
+		right_foot.setGlobalTranslation(rightFoot->getGlobalTranslation());
+		m_IKController->IKSolver_Limb(m_IKController->mRfootID, right_foot);
 		// Update the local orientation of the right foot based on the right normal
-		;
 	}
 	m_pSkeleton->update();
 }

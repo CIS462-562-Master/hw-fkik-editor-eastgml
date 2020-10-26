@@ -443,7 +443,6 @@ int IKController::computeCCDIK(ATarget target, AIKchain& IKchain, ASkeleton* pIK
 
 		}
 	} 
-	//pIKSkeleton->update();
 
 
 	return true;
